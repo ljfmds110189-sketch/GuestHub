@@ -104,7 +104,7 @@ export default async function ReservationsPage({ params, searchParams }: Props) 
       <ReservationsLiveView
         lang={ctx.lang}
         initialRows={reservations.rows}
-        initialBoard={board}
+        allReservations={board}
         guestOptions={guestOptions}
         roomOptions={roomOptions}
       />
