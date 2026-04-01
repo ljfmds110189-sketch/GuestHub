@@ -4,8 +4,8 @@ import {
   FiCalendar,
   FiClock,
   FiGrid,
-  FiHome,
   FiLayers,
+  FiSettings,
   FiUser,
   FiUsers,
 } from "react-icons/fi";
@@ -34,62 +34,81 @@ export default async function DashboardPage({ params, searchParams }: Props) {
 
   const serviceOpen = srStats ? srStats.pending + srStats.accepted + srStats.in_progress : 0;
   const hasServicePermission = hasPermission(ctx.user, "services.manage");
-  const appTiles = [
+
+  const groups = [
     {
-      href: `/${ctx.lang}/rooms`,
-      label: ctx.t("الغرف", "Rooms"),
-      icon: FiLayers,
-      meta: `${stats.total} ${ctx.t("غرفة", "rooms")}`,
-      iconClass: "bg-cyan-100 text-cyan-700",
+      titleAr: "إدارة الغرف والحجوزات",
+      titleEn: "Rooms & Reservations",
+      tiles: [
+        {
+          href: `/${ctx.lang}/rooms`,
+          label: ctx.t("الغرف", "Rooms"),
+          icon: FiLayers,
+          meta: `${stats.total} ${ctx.t("غرفة", "rooms")}`,
+          iconClass: "bg-cyan-100 text-cyan-700",
+        },
+        {
+          href: `/${ctx.lang}/reservations`,
+          label: ctx.t("الحجوزات", "Reservations"),
+          icon: FiCalendar,
+          meta: ctx.t("متابعة مباشرة", "Live board"),
+          iconClass: "bg-amber-100 text-amber-700",
+        },
+        {
+          href: `/${ctx.lang}/qr-codes`,
+          label: ctx.t("رموز QR", "QR Codes"),
+          icon: FiGrid,
+          meta: ctx.t("رموز الغرف", "Room codes"),
+          iconClass: "bg-violet-100 text-violet-700",
+        },
+      ],
     },
     {
-      href: `/${ctx.lang}/reservations`,
-      label: ctx.t("الحجوزات", "Reservations"),
-      icon: FiCalendar,
-      meta: ctx.t("متابعة مباشرة", "Live board"),
-      iconClass: "bg-amber-100 text-amber-700",
+      titleAr: "الخدمات والضيوف",
+      titleEn: "Services & Guests",
+      tiles: [
+        {
+          href: `/${ctx.lang}/service-requests`,
+          label: ctx.t("طلبات الخدمة", "Service Requests"),
+          icon: FiBell,
+          meta: `${serviceOpen} ${ctx.t("مفتوحة", "open")}`,
+          iconClass: "bg-fuchsia-100 text-fuchsia-700",
+        },
+        {
+          href: `/${ctx.lang}/guests`,
+          label: ctx.t("الضيوف", "Guests"),
+          icon: FiUsers,
+          meta: ctx.t("قائمة النزلاء", "Guest directory"),
+          iconClass: "bg-teal-100 text-teal-700",
+        },
+      ],
     },
     {
-      href: `/${ctx.lang}/service-requests`,
-      label: ctx.t("طلبات الخدمة", "Service Requests"),
-      icon: FiBell,
-      meta: `${serviceOpen} ${ctx.t("مفتوحة", "open")}`,
-      iconClass: "bg-fuchsia-100 text-fuchsia-700",
-    },
-    {
-      href: `/${ctx.lang}/qr-codes`,
-      label: ctx.t("رموز QR", "QR Codes"),
-      icon: FiGrid,
-      meta: ctx.t("إدارة رموز الغرف", "Room QR management"),
-      iconClass: "bg-violet-100 text-violet-700",
-    },
-    {
-      href: `/${ctx.lang}/guests`,
-      label: ctx.t("الضيوف", "Guests"),
-      icon: FiUsers,
-      meta: ctx.t("قائمة النزلاء", "Guest directory"),
-      iconClass: "bg-teal-100 text-teal-700",
-    },
-    {
-      href: `/${ctx.lang}/users`,
-      label: ctx.t("المستخدمون", "Users"),
-      icon: FiUser,
-      meta: ctx.t("فريق الفندق", "Hotel staff"),
-      iconClass: "bg-indigo-100 text-indigo-700",
-    },
-    {
-      href: `/${ctx.lang}/roles`,
-      label: ctx.t("الأدوار", "Roles"),
-      icon: FiBookOpen,
-      meta: ctx.t("الصلاحيات", "Permissions"),
-      iconClass: "bg-rose-100 text-rose-700",
-    },
-    {
-      href: `/${ctx.lang}/profile`,
-      label: ctx.t("الملف الشخصي", "Profile"),
-      icon: FiHome,
-      meta: ctx.t("حسابك", "Your account"),
-      iconClass: "bg-emerald-100 text-emerald-700",
+      titleAr: "الإعدادات والصلاحيات",
+      titleEn: "Settings & Access",
+      tiles: [
+        {
+          href: `/${ctx.lang}/users`,
+          label: ctx.t("المستخدمون", "Users"),
+          icon: FiUser,
+          meta: ctx.t("فريق الفندق", "Hotel staff"),
+          iconClass: "bg-indigo-100 text-indigo-700",
+        },
+        {
+          href: `/${ctx.lang}/roles`,
+          label: ctx.t("الأدوار", "Roles"),
+          icon: FiBookOpen,
+          meta: ctx.t("الصلاحيات", "Permissions"),
+          iconClass: "bg-rose-100 text-rose-700",
+        },
+        {
+          href: `/${ctx.lang}/profile`,
+          label: ctx.t("الملف الشخصي", "Profile"),
+          icon: FiSettings,
+          meta: ctx.t("حسابك", "Your account"),
+          iconClass: "bg-emerald-100 text-emerald-700",
+        },
+      ],
     },
   ];
 
@@ -113,35 +132,35 @@ export default async function DashboardPage({ params, searchParams }: Props) {
             </p>
           ) : null}
 
-          <section className="rounded-3xl bg-white/12 p-4 backdrop-blur-xl md:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-wide text-white/90">
-                {ctx.t("تطبيقات العمليات", "Operations Apps")}
+          {groups.map((group) => (
+            <section key={group.titleEn} className="rounded-3xl bg-white/12 p-4 backdrop-blur-xl md:p-5">
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/50">
+                {ctx.t(group.titleAr, group.titleEn)}
               </h2>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-              {appTiles.map((tile) => {
-                const Icon = tile.icon;
-                return (
-                  <Link
-                    key={tile.href}
-                    href={tile.href}
-                    className="group rounded-2xl bg-white/14 p-4 text-center backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/20"
-                  >
-                    <div className="flex min-h-32 flex-col items-center justify-center gap-3">
-                      <div className={`grid h-14 w-14 place-items-center rounded-2xl ${tile.iconClass}`}>
-                        <Icon className="h-7 w-7" />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {group.tiles.map((tile) => {
+                  const Icon = tile.icon;
+                  return (
+                    <Link
+                      key={tile.href}
+                      href={tile.href}
+                      className="group rounded-2xl bg-white/14 p-4 text-center backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/20"
+                    >
+                      <div className="flex min-h-28 flex-col items-center justify-center gap-3">
+                        <div className={`grid h-14 w-14 place-items-center rounded-2xl ${tile.iconClass}`}>
+                          <Icon className="h-7 w-7" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{tile.label}</p>
+                          <p className="mt-1 text-[11px] text-white/70">{tile.meta}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{tile.label}</p>
-                        <p className="mt-1 text-[11px] text-white/70">{tile.meta}</p>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
 
           <section className="rounded-2xl bg-white/12 p-5 backdrop-blur-xl">
             <div className="flex items-start justify-between gap-3">
