@@ -93,6 +93,7 @@ export function GuestServiceForm({ token, categories, lang }: Props) {
         setResult({ ok: true, message: data.message });
         (e.target as HTMLFormElement).reset();
         setSelectedCategory(null);
+        window.dispatchEvent(new CustomEvent("guest-request-change"));
       } else {
         setResult({ ok: false, message: data.error ?? t("حدث خطأ", "Something went wrong") });
       }

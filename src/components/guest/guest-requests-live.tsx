@@ -53,8 +53,13 @@ export function GuestRequestsLive({ token, lang, initialRequests }: Props) {
   }, [token]);
 
   useEffect(() => {
-    const interval = setInterval(fetchRequests, 15_000); // poll every 15s
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchRequests, 5_000);
+    const onNewRequest = () => fetchRequests();
+    window.addEventListener("guest-request-change", onNewRequest);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("guest-request-change", onNewRequest);
+    };
   }, [fetchRequests]);
 
   if (requests.length === 0) return null;
