@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { FiBell, FiBookOpen, FiCalendar, FiGrid, FiHome, FiLayers, FiLogOut, FiUser, FiUsers } from "react-icons/fi";
+import { FiLogOut, FiUser } from "react-icons/fi";
 import type { SessionUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/auth";
 import { dirForLang, tr, type AppLang } from "@/lib/i18n";
 import { NotificationBell } from "./notification-bell";
 import { LiveClock } from "./live-clock";
 import { HtmlDirSetter } from "@/components/html-dir-setter";
+import { BackNavButton } from "./back-nav-button";
 
 type NavKey =
   | "dashboard"
@@ -23,6 +24,7 @@ type Props = {
   active: NavKey;
   title: string;
   subtitle?: string;
+  backgroundImage?: string;
   children: React.ReactNode;
 };
 
@@ -34,183 +36,126 @@ type NavItem = {
   labelEn: string;
 };
 
-const navItems: NavItem[] = [
-  {
-    key: "dashboard",
-    href: (lang) => `/${lang}/dashboard`,
-    icon: FiHome,
-    labelAr: "لوحة التحكم",
-    labelEn: "Dashboard",
-  },
-  {
-    key: "rooms",
-    href: (lang) => `/${lang}/rooms`,
-    icon: FiLayers,
-    labelAr: "الغرف",
-    labelEn: "Rooms",
-  },
-  {
-    key: "guests",
-    href: (lang) => `/${lang}/guests`,
-    icon: FiUsers,
-    labelAr: "الضيوف",
-    labelEn: "Guests",
-  },
-  {
-    key: "users",
-    href: (lang) => `/${lang}/users`,
-    icon: FiUser,
-    labelAr: "المستخدمون",
-    labelEn: "Users",
-  },
-  {
-    key: "roles",
-    href: (lang) => `/${lang}/roles`,
-    icon: FiBookOpen,
-    labelAr: "الأدوار",
-    labelEn: "Roles",
-  },
-  {
-    key: "reservations",
-    href: (lang) => `/${lang}/reservations`,
-    icon: FiCalendar,
-    labelAr: "الحجوزات",
-    labelEn: "Reservations",
-  },
-  {
-    key: "service-requests",
-    href: (lang) => `/${lang}/service-requests`,
-    icon: FiBell,
-    labelAr: "طلبات الخدمة",
-    labelEn: "Service Requests",
-  },
-];
-
-export function PanelShell({ lang, user, active, title, subtitle, children }: Props) {
+export function PanelShell({ lang, user, active, title, subtitle, backgroundImage, children }: Props) {
   const t = (ar: string, en: string) => tr(lang, ar, en);
+  const activePath = active === "dashboard" ? "dashboard" : active;
+  const resolvedBackground = backgroundImage ?? "/back.jpeg";
+  const hasBackground = Boolean(resolvedBackground);
+  const isRtl = dirForLang(lang) === "rtl";
+  const glassSoft = hasBackground
+    ? "bg-white/12 text-white hover:bg-white/22"
+    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+  const glassStrong = hasBackground
+    ? "bg-white/20 text-white hover:bg-white/30"
+    : "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100";
 
   return (
-    <div dir={dirForLang(lang)} className="flex h-screen w-screen overflow-hidden bg-slate-100 text-slate-800">
+    <div dir={dirForLang(lang)} className="relative flex h-screen w-screen overflow-hidden bg-slate-100 text-slate-800">
       <HtmlDirSetter lang={lang} />
-      {/* ── Sidebar (desktop) ── */}
-      <aside className="hidden w-[260px] shrink-0 flex-col border-e border-slate-200 bg-slate-900 text-slate-300 lg:flex">
-        <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-teal-600 text-white">
-            <FiGrid className="h-4 w-4" />
-          </div>
-          <div>
-            <p className="text-xs font-bold tracking-widest text-white">GUESTHUB</p>
-            <p className="text-[10px] text-slate-500">{t("إدارة الفندق", "Hotel Operations")}</p>
-          </div>
-        </div>
+      {hasBackground ? (
+        <>
+          <div
+            className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-[2px]"
+            style={{ backgroundImage: `url('${resolvedBackground}')` }}
+          />
+          <div className="absolute inset-0 bg-slate-900/40" />
+        </>
+      ) : null}
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.key === active;
-            return (
-              <Link
-                key={item.key}
-                href={item.href(lang)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition ${
-                  isActive
-                    ? "bg-teal-600 text-white shadow-md shadow-teal-900/40"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+        <header
+          className={`relative z-50 shrink-0 px-3 py-2.5 md:px-6 md:py-3 ${
+            hasBackground
+              ? "border-b border-white/20 bg-white/10 backdrop-blur-xl"
+              : "border-b border-slate-200 bg-white"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2 md:gap-3">
+            <div className="flex min-w-0 items-center gap-2 md:gap-3">
+              {active !== "dashboard" ? (
+                <BackNavButton
+                  fallbackHref={`/${lang}/dashboard`}
+                  label={t("رجوع", "Back")}
+                  rtl={isRtl}
+                  dark={hasBackground}
+                />
+              ) : null}
+              <div className="min-w-0">
+                <h1
+                  className={`truncate text-sm font-semibold tracking-wide md:text-base ${
+                    hasBackground ? "text-white" : "text-slate-900"
+                  }`}
+                >
+                  {title}
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div
+                className={`hidden items-center gap-1 rounded-xl p-1 sm:flex ${
+                  hasBackground ? "bg-white/10" : "border border-slate-200 bg-white"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{tr(lang, item.labelAr, item.labelEn)}</span>
-              </Link>
-            );
-          })}
-        </nav>
+                <Link
+                  href={`/en/${activePath}`}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                    lang === "en" ? "bg-teal-600 text-white" : hasBackground ? "text-white/80 hover:text-white" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  EN
+                </Link>
+                <Link
+                  href={`/ar/${activePath}`}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                    lang === "ar" ? "bg-teal-600 text-white" : hasBackground ? "text-white/80 hover:text-white" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  AR
+                </Link>
+              </div>
 
-        <div className="border-t border-slate-800 px-4 py-3">
-          <p className="text-[10px] text-slate-600">v{process.env.NEXT_PUBLIC_APP_VERSION}</p>
-        </div>
-      </aside>
+              <NotificationBell lang={lang} hasPermission={hasPermission(user, "services.manage")} />
 
-      {/* ── Main column ── */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* ── Top bar ── */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 md:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-teal-600 text-white lg:hidden">
-              <FiGrid className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-semibold text-slate-900 md:text-base">{title}</h1>
-              {subtitle ? <p className="truncate text-[11px] text-slate-500">{subtitle}</p> : null}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-0.5 md:flex">
               <Link
-                href={`/en/${active === "dashboard" ? "dashboard" : active}`}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${lang === "en" ? "bg-teal-600 text-white" : "text-slate-500 hover:text-slate-700"}`}
+                href={`/${lang}/profile`}
+                className={`hidden items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition lg:inline-flex ${glassSoft}`}
               >
-                EN
+                <FiUser className="h-3.5 w-3.5" />
+                <span className="max-w-28 truncate">{user.fullName}</span>
               </Link>
-              <Link
-                href={`/ar/${active === "dashboard" ? "dashboard" : active}`}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${lang === "ar" ? "bg-teal-600 text-white" : "text-slate-500 hover:text-slate-700"}`}
-              >
-                AR
-              </Link>
+
+              <form action="/api/auth/logout" method="post">
+                <input type="hidden" name="lang" value={lang} />
+                <button className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${glassStrong}`}>
+                  <FiLogOut className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{t("خروج", "Logout")}</span>
+                </button>
+              </form>
             </div>
-
-            <NotificationBell lang={lang} hasPermission={hasPermission(user, "services.manage")} />
-
-            <Link
-              href={`/${lang}/profile`}
-              className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 md:inline-flex"
-            >
-              <FiUser className="h-3.5 w-3.5" />
-              {user.fullName}
-            </Link>
-
-            <form action="/api/auth/logout" method="post">
-              <input type="hidden" name="lang" value={lang} />
-              <button className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-700">
-                <FiLogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t("خروج", "Logout")}</span>
-              </button>
-            </form>
           </div>
         </header>
-
-        {/* ── Mobile nav ── */}
-        <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.key === active;
-            return (
-              <Link
-                key={item.key}
-                href={item.href(lang)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  isActive
-                    ? "bg-teal-600 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {tr(lang, item.labelAr, item.labelEn)}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* ── Content ── */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
+        <main className="panel-glass relative z-0 flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="mx-auto w-full max-w-7xl">
+            {children}
+          </div>
         </main>
 
-        {/* ── Footer ── */}
-        <footer className="flex h-10 shrink-0 items-center justify-between border-t border-slate-200 bg-white px-4 md:px-6">
-          <p className="text-[11px] font-medium text-slate-400">GuestHub</p>
-          <LiveClock lang={lang} />
+        <footer
+          className={`shrink-0 px-3 py-2 md:px-6 ${
+            hasBackground
+              ? "border-t border-white/20 bg-white/10 backdrop-blur-xl"
+              : "border-t border-slate-200 bg-white"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className={`text-[11px] font-semibold tracking-wide ${hasBackground ? "text-white/80" : "text-slate-500"}`}>
+              GuestHub Operations
+            </p>
+            <div className={`rounded-lg px-2 py-1 text-[11px] font-medium ${glassSoft}`}>
+              <LiveClock lang={lang} />
+            </div>
+          </div>
         </footer>
       </div>
     </div>

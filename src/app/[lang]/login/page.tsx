@@ -32,14 +32,14 @@ export default async function LoginPage({ params, searchParams }: Props) {
 
       {/* Background image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-[2px]"
         style={{ backgroundImage: "url('/back-login.jpg')" }}
       />
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Glassmorphism card */}
-      <section className="relative z-10 w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+      <section className="relative z-10 w-full max-w-md rounded-3xl bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
         <div className="mb-4 flex items-center justify-end gap-2 text-sm">
           <Link
             href="/ar/login"

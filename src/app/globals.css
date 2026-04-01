@@ -31,3 +31,44 @@ body {
   background: rgba(13, 148, 136, 0.18);
   color: #052b26;
 }
+
+.panel-glass .bg-white,
+.panel-glass .bg-slate-50,
+.panel-glass .bg-slate-100,
+.panel-glass .bg-emerald-50,
+.panel-glass .bg-amber-50,
+.panel-glass .bg-indigo-50,
+.panel-glass .bg-rose-50,
+.panel-glass .bg-teal-50,
+.panel-glass .bg-cyan-50,
+.panel-glass .bg-fuchsia-50 {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.panel-glass .border,
+.panel-glass [class*=" border-"],
+.panel-glass [class^="border-"] {
+  border-color: transparent !important;
+}
+
+.panel-glass .text-slate-900,
+.panel-glass .text-slate-800,
+.panel-glass .text-slate-700 {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.panel-glass .text-slate-600,
+.panel-glass .text-slate-500,
+.panel-glass .text-slate-400 {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.panel-glass .shadow-sm,
+.panel-glass .shadow-md,
+.panel-glass .shadow-lg,
+.panel-glass .shadow-xl,
+.panel-glass .shadow-2xl {
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25) !important;
+}

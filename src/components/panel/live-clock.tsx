@@ -39,9 +39,9 @@ export function LiveClock({ lang }: Props) {
   if (!time) return null;
 
   return (
-    <div className="flex items-center gap-3 text-xs text-slate-500">
+    <div className="flex items-center gap-3 text-xs text-white/85">
       <span>{date}</span>
-      <span className="font-mono tabular-nums tracking-tight text-slate-700">{time}</span>
+      <span className="font-mono tabular-nums tracking-tight text-white">{time}</span>
     </div>
   );
 }

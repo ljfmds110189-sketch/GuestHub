@@ -9,6 +9,7 @@ import {
   listStaffUsers,
 } from "@/lib/data";
 import { CreateRequestForm } from "@/components/panel/create-request-form";
+import { AppSelect } from "@/components/ui/app-select";
 import { readPager, requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
 
 type Props = {
@@ -264,11 +265,11 @@ export default async function ServiceRequestsPage({ params, searchParams }: Prop
                               name="returnTo"
                               value={`/${ctx.lang}/service-requests${statusFilter ? `?status=${statusFilter}` : ""}`}
                             />
-                            <select
+                            <AppSelect
                               name="status"
                               defaultValue=""
                               required
-                              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs"
+                              className="rounded-lg px-2 py-1 text-xs"
                             >
                               <option value="" disabled>
                                 {ctx.t("تغيير", "Change")}
@@ -281,10 +282,10 @@ export default async function ServiceRequestsPage({ params, searchParams }: Prop
                               ) : null}
                               <option value="completed">{statusLabel("completed")}</option>
                               <option value="cancelled">{statusLabel("cancelled")}</option>
-                            </select>
-                            <select
+                            </AppSelect>
+                            <AppSelect
                               name="assignedTo"
-                              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs"
+                              className="rounded-lg px-2 py-1 text-xs"
                             >
                               <option value="">{ctx.t("تعيين", "Assign")}</option>
                               {staffList.map((s) => (
@@ -292,7 +293,7 @@ export default async function ServiceRequestsPage({ params, searchParams }: Prop
                                   {s.full_name}
                                 </option>
                               ))}
-                            </select>
+                            </AppSelect>
                             <button className="rounded-lg bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">
                               {ctx.t("حفظ", "Save")}
                             </button>

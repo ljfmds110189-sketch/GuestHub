@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Pagination } from "@/components/panel/pagination";
+import { UsersManagement } from "@/components/panel/users-management";
 import { listRoles, listUsersPaginated } from "@/lib/data";
 import { readPager, requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
 
@@ -27,7 +28,6 @@ export default async function UsersPage({ params, searchParams }: Props) {
       user={ctx.user}
       active="users"
       title={ctx.t("إدارة المستخدمين", "Users Management")}
-      subtitle={ctx.t("إنشاء المستخدمين وربطهم بالأدوار", "Create users and assign roles")}
     >
       {query.error ? (
         <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
@@ -40,74 +40,26 @@ export default async function UsersPage({ params, searchParams }: Props) {
         </p>
       ) : null}
 
-      <section className="mb-4 grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-slate-900">{ctx.t("إضافة مستخدم", "Add User")}</h2>
-          <form action="/api/admin/users" method="post" className="mt-3 grid gap-3 md:grid-cols-2">
-            <input type="hidden" name="lang" value={ctx.lang} />
-            <input type="hidden" name="returnTo" value={`/${ctx.lang}/users`} />
-            <input
-              name="fullName"
-              required
-              placeholder={ctx.t("الاسم الكامل", "Full name")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="username"
-              required
-              placeholder={ctx.t("اسم المستخدم", "Username")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="password"
-              required
-              type="password"
-              placeholder={ctx.t("كلمة المرور (8+)", "Password (8+)")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700 md:col-span-2"
-            />
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white md:col-span-2">
-              {ctx.t("إضافة", "Create")}
-            </button>
-          </form>
-        </article>
+      <UsersManagement
+        lang={ctx.lang}
+        returnTo={`/${ctx.lang}/users`}
+        users={users.rows}
+        roles={roles}
+        labels={{
+          addUser: ctx.t("إضافة مستخدم", "Add User"),
+          assignRole: ctx.t("تعيين دور", "Assign Role"),
+          fullName: ctx.t("الاسم الكامل", "Full name"),
+          username: ctx.t("اسم المستخدم", "Username"),
+          password: ctx.t("كلمة المرور (8+)", "Password (8+)"),
+          selectUser: ctx.t("اختر مستخدم", "Select user"),
+          selectRole: ctx.t("اختر دور", "Select role"),
+          create: ctx.t("إضافة", "Create"),
+          saveRole: ctx.t("حفظ الدور", "Assign"),
+          cancel: ctx.t("إلغاء", "Cancel"),
+        }}
+      />
 
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-slate-900">{ctx.t("تعيين دور", "Assign Role")}</h2>
-          <form action="/api/admin/user-roles" method="post" className="mt-3 grid gap-3 md:grid-cols-2">
-            <input type="hidden" name="lang" value={ctx.lang} />
-            <input type="hidden" name="returnTo" value={`/${ctx.lang}/users`} />
-            <select
-              name="userId"
-              required
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            >
-              <option value="">{ctx.t("اختر مستخدم", "Select user")}</option>
-              {users.rows.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.username}
-                </option>
-              ))}
-            </select>
-            <select
-              name="roleId"
-              required
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            >
-              <option value="">{ctx.t("اختر دور", "Select role")}</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.role_name}
-                </option>
-              ))}
-            </select>
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white md:col-span-2">
-              {ctx.t("حفظ الدور", "Assign")}
-            </button>
-          </form>
-        </article>
-      </section>
-
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <section className="overflow-hidden rounded-2xl bg-white/12 backdrop-blur-xl">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-sm">
             <thead className="bg-slate-50 text-slate-400">

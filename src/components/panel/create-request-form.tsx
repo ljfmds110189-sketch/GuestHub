@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { FiChevronDown, FiChevronUp, FiPlus } from "react-icons/fi";
 import type { ActiveReservationOption, ServiceItemOption } from "@/lib/data";
+import { AppSelect } from "@/components/ui/app-select";
+import { AppModal } from "@/components/ui/app-modal";
 
 type Props = {
   lang: "ar" | "en";
@@ -28,7 +30,7 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
     <section className="mt-4">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
       >
         <FiPlus className="h-4 w-4" />
@@ -36,11 +38,17 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
         {open ? <FiChevronUp className="h-4 w-4" /> : <FiChevronDown className="h-4 w-4" />}
       </button>
 
-      {open ? (
+      <AppModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t("إنشاء طلب جديد", "Create New Request")}
+        closeLabel={t("إلغاء", "Cancel")}
+        maxWidthClass="max-w-3xl"
+      >
         <form
           action="/api/service-requests"
           method="post"
-          className="mt-3 rounded-2xl border border-slate-200 bg-white p-5"
+          className="mt-1 rounded-2xl bg-white/5 p-2"
         >
           <input type="hidden" name="lang" value={lang} />
           <input type="hidden" name="action" value="create" />
@@ -52,10 +60,10 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
               <label className="mb-1 block text-xs font-medium text-slate-600">
                 {t("الحجز (الضيف / الغرفة)", "Reservation (Guest / Room)")}
               </label>
-              <select
+              <AppSelect
                 name="reservationId"
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                className="w-full"
               >
                 <option value="">{t("اختر حجزاً", "Select a reservation")}</option>
                 {reservations.map((r) => (
@@ -63,7 +71,7 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
                     {r.guest_name} — {t("الغرفة", "Room")} {r.room_number}
                   </option>
                 ))}
-              </select>
+              </AppSelect>
             </div>
 
             {/* Service item */}
@@ -71,10 +79,10 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
               <label className="mb-1 block text-xs font-medium text-slate-600">
                 {t("الخدمة", "Service")}
               </label>
-              <select
+              <AppSelect
                 name="serviceItemId"
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                className="w-full"
               >
                 <option value="">{t("اختر خدمة", "Select a service")}</option>
                 {[...grouped.entries()].map(([category, items]) => (
@@ -87,7 +95,7 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
                     ))}
                   </optgroup>
                 ))}
-              </select>
+              </AppSelect>
             </div>
 
             {/* Quantity */}
@@ -138,7 +146,7 @@ export function CreateRequestForm({ lang, reservations, serviceItems, returnTo }
             </button>
           </div>
         </form>
-      ) : null}
+      </AppModal>
     </section>
   );
 }

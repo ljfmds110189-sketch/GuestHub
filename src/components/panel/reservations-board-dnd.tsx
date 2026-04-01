@@ -68,10 +68,35 @@ const statuses: ReservationStatus[] = ["booked", "checked_in", "checked_out", "c
 
 type SortCardProps = {
   item: ReservationBoardItem;
-  dragOverlay?: boolean;
 };
 
-function SortCard({ item, dragOverlay = false }: SortCardProps) {
+type CardViewProps = {
+  item: ReservationBoardItem;
+  isDragging?: boolean;
+  dragHandle?: React.ReactNode;
+};
+
+function CardView({ item, isDragging = false, dragHandle }: CardViewProps) {
+  return (
+    <article
+      className={`rounded-xl bg-[rgba(255,255,255,0.2)] p-3 text-sm text-white shadow-[0_6px_18px_rgba(2,6,23,0.22)] ${
+        isDragging ? "opacity-60" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="font-semibold">{item.guest_name}</p>
+          <p className="text-xs text-white/75">#{item.room_number}</p>
+        </div>
+        {dragHandle}
+      </div>
+      <p className="mt-2 text-xs text-white/75">{new Date(item.check_in).toLocaleString()}</p>
+      <p className="text-xs text-white/65">{new Date(item.check_out).toLocaleString()}</p>
+    </article>
+  );
+}
+
+function SortCard({ item }: SortCardProps) {
   const {
     attributes,
     listeners,
@@ -82,7 +107,6 @@ function SortCard({ item, dragOverlay = false }: SortCardProps) {
     isDragging,
   } = useSortable({
     id: String(item.id),
-    disabled: dragOverlay,
   });
 
   const style = {
@@ -91,31 +115,23 @@ function SortCard({ item, dragOverlay = false }: SortCardProps) {
   };
 
   return (
-    <article
-      ref={setNodeRef}
-      style={style}
-      className={`rounded-xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700 ${
-        isDragging ? "opacity-60" : ""
-      }`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold">{item.guest_name}</p>
-          <p className="text-xs text-slate-400">#{item.room_number}</p>
-        </div>
-        <button
-          type="button"
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          className="touch-none cursor-grab active:cursor-grabbing rounded-lg border border-slate-300 p-1 text-slate-400"
-        >
-          <FiMove className="h-4 w-4" />
-        </button>
-      </div>
-      <p className="mt-2 text-xs text-slate-400">{new Date(item.check_in).toLocaleString()}</p>
-      <p className="text-xs text-slate-500">{new Date(item.check_out).toLocaleString()}</p>
-    </article>
+    <div ref={setNodeRef} style={style}>
+      <CardView
+        item={item}
+        isDragging={isDragging}
+        dragHandle={
+          <button
+            type="button"
+            ref={setActivatorNodeRef}
+            {...attributes}
+            {...listeners}
+            className="touch-none cursor-grab active:cursor-grabbing rounded-lg bg-white/20 p-1 text-white/80 transition hover:bg-white/30"
+          >
+            <FiMove className="h-4 w-4" />
+          </button>
+        }
+      />
+    </div>
   );
 }
 
@@ -130,11 +146,11 @@ function DroppableColumn({ id, title, children }: ColumnProps) {
   return (
     <section
       ref={setNodeRef}
-      className={`rounded-2xl border bg-white p-3 ${
-        isOver ? "border-cyan-300" : "border-slate-200"
+      className={`min-h-52 rounded-2xl p-3 ${
+        isOver ? "bg-[rgba(34,211,238,0.2)] ring-2 ring-cyan-300/50" : "bg-[rgba(255,255,255,0.14)] ring-1 ring-white/20"
       }`}
     >
-      <h3 className="mb-2 text-sm font-semibold text-slate-700">{title}</h3>
+      <h3 className="mb-2 text-sm font-semibold text-white">{title}</h3>
       {children}
     </section>
   );
@@ -256,7 +272,7 @@ export function ReservationsBoardDnd({ lang, initialItems, onItemsChange }: Prop
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        <div className="grid gap-3 lg:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {columns.map((column) => (
             <DroppableColumn
               key={column.status}
@@ -277,10 +293,10 @@ export function ReservationsBoardDnd({ lang, initialItems, onItemsChange }: Prop
           ))}
         </div>
         <DragOverlay>
-          {activeItem ? <SortCard item={activeItem} dragOverlay /> : null}
+          {activeItem ? <CardView item={activeItem} /> : null}
         </DragOverlay>
       </DndContext>
-      <p className={`text-xs ${saving ? "text-amber-700" : "text-blue-600"}`}>{message}</p>
+      <p className={`text-xs ${saving ? "text-amber-200" : "text-cyan-200"}`}>{message}</p>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Pagination } from "@/components/panel/pagination";
+import { GuestsManagement } from "@/components/panel/guests-management";
 import { hasPermission } from "@/lib/auth";
 import { listGuestsPaginated } from "@/lib/data";
 import { readPager, requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
@@ -25,7 +26,6 @@ export default async function GuestsPage({ params, searchParams }: Props) {
       user={ctx.user}
       active="guests"
       title={ctx.t("إدارة الضيوف", "Guest Management")}
-      subtitle={ctx.t("تعريف الضيوف وربطهم بالحجوزات", "Register and track guests")}
     >
       {query.error ? (
         <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
@@ -38,123 +38,36 @@ export default async function GuestsPage({ params, searchParams }: Props) {
         </p>
       ) : null}
 
-      {canManage ? (
-        <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-slate-900">{ctx.t("إضافة ضيف", "Add Guest")}</h2>
-          <form action="/api/guests" method="post" className="mt-3 grid gap-3 md:grid-cols-5">
-            <input type="hidden" name="lang" value={ctx.lang} />
-            <input type="hidden" name="returnTo" value={`/${ctx.lang}/guests`} />
-            <input
-              name="firstName"
-              required
-              placeholder={ctx.t("الاسم الأول", "First name")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="lastName"
-              required
-              placeholder={ctx.t("اسم العائلة", "Last name")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="phone"
-              placeholder={ctx.t("الهاتف", "Phone")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="email"
-              type="email"
-              placeholder={ctx.t("البريد الإلكتروني", "Email")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-              {ctx.t("حفظ", "Save")}
-            </button>
-          </form>
-        </section>
-      ) : null}
-
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[780px] text-sm">
-            <thead className="bg-slate-50 text-slate-400">
-              <tr>
-                <th className="px-4 py-3 text-left">{ctx.t("الاسم", "Name")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("الهاتف", "Phone")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("البريد", "Email")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("الغرفة الحالية", "Current room")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("الدخول/الخروج", "Check in/out")}</th>
-                {canManage ? <th className="px-4 py-3 text-left">{ctx.t("إجراءات", "Actions")}</th> : null}
-              </tr>
-            </thead>
-            <tbody>
-              {guests.rows.map((guest) => (
-                <tr key={guest.id} className="border-t border-slate-200 text-slate-700">
-                  <td className="px-4 py-3 font-medium">
-                    {guest.first_name} {guest.last_name}
-                  </td>
-                  <td className="px-4 py-3">{guest.phone ?? "-"}</td>
-                  <td className="px-4 py-3">{guest.email ?? "-"}</td>
-                  <td className="px-4 py-3">{guest.room_number ?? "-"}</td>
-                  <td className="px-4 py-3 text-xs text-slate-400">
-                    {guest.check_in ? new Date(guest.check_in).toLocaleString() : "-"} /{" "}
-                    {guest.check_out ? new Date(guest.check_out).toLocaleString() : "-"}
-                  </td>
-                  {canManage ? (
-                    <td className="px-4 py-3">
-                      <div className="space-y-2">
-                        <form action="/api/guests" method="post" className="grid min-w-[520px] gap-2 md:grid-cols-2">
-                          <input type="hidden" name="lang" value={ctx.lang} />
-                          <input type="hidden" name="returnTo" value={`/${ctx.lang}/guests`} />
-                          <input type="hidden" name="action" value="update" />
-                          <input type="hidden" name="guestId" value={guest.id} />
-                          <input
-                            name="firstName"
-                            required
-                            defaultValue={guest.first_name}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="lastName"
-                            required
-                            defaultValue={guest.last_name}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="phone"
-                            defaultValue={guest.phone ?? ""}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="email"
-                            type="email"
-                            defaultValue={guest.email ?? ""}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <div className="flex flex-wrap gap-2 md:col-span-2">
-                            <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white">
-                              {ctx.t("حفظ", "Save")}
-                            </button>
-                          </div>
-                        </form>
-                        <form action="/api/guests" method="post">
-                          <input type="hidden" name="lang" value={ctx.lang} />
-                          <input type="hidden" name="returnTo" value={`/${ctx.lang}/guests`} />
-                          <input type="hidden" name="action" value="delete" />
-                          <input type="hidden" name="guestId" value={guest.id} />
-                          <button className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">
-                            {ctx.t("حذف", "Delete")}
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <GuestsManagement
+        lang={ctx.lang}
+        returnTo={`/${ctx.lang}/guests`}
+        guests={guests.rows}
+        canManage={canManage}
+        labels={{
+          addGuest: ctx.t("إضافة ضيف", "Add Guest"),
+          editGuest: ctx.t("تعديل بيانات الضيف", "Edit Guest"),
+          deleteGuest: ctx.t("حذف الضيف", "Delete Guest"),
+          save: ctx.t("حفظ", "Save"),
+          cancel: ctx.t("إلغاء", "Cancel"),
+          firstName: ctx.t("الاسم الأول", "First name"),
+          lastName: ctx.t("اسم العائلة", "Last name"),
+          phone: ctx.t("الهاتف", "Phone"),
+          email: ctx.t("البريد الإلكتروني", "Email"),
+          actions: ctx.t("إجراءات", "Actions"),
+          name: ctx.t("الاسم", "Name"),
+          currentRoom: ctx.t("الغرفة الحالية", "Current room"),
+          checkInOut: ctx.t("الدخول/الخروج", "Check in/out"),
+          openAddModal: ctx.t("إضافة ضيف", "Add Guest"),
+          openEditModal: ctx.t("تعديل", "Edit"),
+          openDeleteDialog: ctx.t("حذف", "Delete"),
+          confirmDeleteTitle: ctx.t("تأكيد حذف الضيف", "Confirm Guest Deletion"),
+          confirmDeleteMessage: ctx.t(
+            "هل أنت متأكد من حذف هذا الضيف؟ لا يمكن التراجع عن هذا الإجراء.",
+            "Are you sure you want to delete this guest? This action cannot be undone.",
+          ),
+          confirmDeleteButton: ctx.t("تأكيد الحذف", "Confirm Delete"),
+        }}
+      />
 
       <Pagination
         lang={ctx.lang}

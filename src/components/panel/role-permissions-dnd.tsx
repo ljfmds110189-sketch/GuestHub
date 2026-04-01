@@ -5,6 +5,7 @@ import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type D
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FiMenu, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
+import { AppSelect } from "@/components/ui/app-select";
 
 type AssignedPermission = {
   permission_id: number;
@@ -142,10 +143,10 @@ export function RolePermissionsDnd({ lang, roleId, initialAssigned, allPermissio
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <select
+        <AppSelect
           value={selectedPermissionId}
           onChange={(event) => setSelectedPermissionId(event.target.value)}
-          className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+          className="w-auto min-w-56"
         >
           <option value="">{t("انتخاب دسترسی", "Select permission")}</option>
           {allPermissions.map((permission) => (
@@ -153,7 +154,7 @@ export function RolePermissionsDnd({ lang, roleId, initialAssigned, allPermissio
               {permission.permission_code}
             </option>
           ))}
-        </select>
+        </AppSelect>
         <button
           type="button"
           onClick={addPermission}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { RolePermissionsDnd } from "@/components/panel/role-permissions-dnd";
+import { RolesManagement } from "@/components/panel/roles-management";
 import { listPermissions, listRolePermissions, listRoles } from "@/lib/data";
 import { requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
 
@@ -30,7 +31,6 @@ export default async function RolesPage({ params, searchParams }: Props) {
       user={ctx.user}
       active="roles"
       title={ctx.t("الأدوار والصلاحيات", "Roles & Permissions")}
-      subtitle={ctx.t("إدارة دایناميكية للمستويات والصلاحيات", "Dynamic RBAC management")}
     >
       {query.error ? (
         <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
@@ -44,89 +44,33 @@ export default async function RolesPage({ params, searchParams }: Props) {
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-slate-900">{ctx.t("إضافة دور", "Create Role")}</h2>
-          <form action="/api/admin/roles" method="post" className="mt-3 space-y-3">
-            <input type="hidden" name="lang" value={ctx.lang} />
-            <input type="hidden" name="returnTo" value={`/${ctx.lang}/roles`} />
-            <input type="hidden" name="action" value="create" />
-            <input
-              name="roleName"
-              required
-              placeholder={ctx.t("اسم الدور", "Role name")}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="description"
-              placeholder={ctx.t("الوصف", "Description")}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <button className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-              {ctx.t("إنشاء الدور", "Create role")}
-            </button>
-          </form>
+        <RolesManagement
+          lang={ctx.lang}
+          returnTo={`/${ctx.lang}/roles`}
+          roles={roles}
+          selectedRoleId={selectedRole?.id}
+          labels={{
+            createRole: ctx.t("إضافة دور", "Create Role"),
+            editRole: ctx.t("تعديل الدور", "Edit Role"),
+            deleteRole: ctx.t("حذف الدور", "Delete Role"),
+            roleName: ctx.t("اسم الدور", "Role name"),
+            description: ctx.t("الوصف", "Description"),
+            save: ctx.t("حفظ", "Save"),
+            cancel: ctx.t("إلغاء", "Cancel"),
+            openCreateModal: ctx.t("إضافة دور", "Create Role"),
+            openEditModal: ctx.t("تعديل", "Edit"),
+            openDeleteDialog: ctx.t("حذف", "Delete"),
+            selectRoleToEdit: ctx.t("اختر دورا للتعديل", "Select role to edit"),
+            confirmDeleteTitle: ctx.t("تأكيد حذف الدور", "Confirm Role Deletion"),
+            confirmDeleteMessage: ctx.t(
+              "هل أنت متأكد من حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء.",
+              "Are you sure you want to delete this role? This action cannot be undone.",
+            ),
+            confirmDeleteButton: ctx.t("تأكيد الحذف", "Confirm Delete"),
+          }}
+        />
 
-          <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-              {ctx.t("اختر دورا للتعديل", "Select role to edit")}
-            </p>
-            {roles.map((role) => (
-              <Link
-                key={role.id}
-                href={`/${ctx.lang}/roles?roleId=${role.id}`}
-                className={`block rounded-xl border px-3 py-2 text-sm ${
-                  selectedRole?.id === role.id
-                    ? "border-cyan-400 bg-blue-600/15 text-blue-700"
-                    : "border-slate-300 bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="font-medium">{role.role_name}</p>
-                <p className="text-xs opacity-80">{role.description ?? "-"}</p>
-              </Link>
-            ))}
-          </div>
-
-          {selectedRole ? (
-            <div className="mt-5 border-t border-slate-200 pt-4">
-              <h3 className="text-sm font-semibold text-slate-800">
-                {ctx.t("تعديل الدور المحدد", "Edit selected role")}
-              </h3>
-              <form action="/api/admin/roles" method="post" className="mt-3 space-y-3">
-                <input type="hidden" name="lang" value={ctx.lang} />
-                <input type="hidden" name="returnTo" value={`/${ctx.lang}/roles?roleId=${selectedRole.id}`} />
-                <input type="hidden" name="action" value="update" />
-                <input type="hidden" name="roleId" value={selectedRole.id} />
-                <input
-                  name="roleName"
-                  required
-                  defaultValue={selectedRole.role_name}
-                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                />
-                <input
-                  name="description"
-                  defaultValue={selectedRole.description ?? ""}
-                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                />
-                <div className="flex flex-wrap gap-2">
-                  <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-                    {ctx.t("حفظ التعديلات", "Save changes")}
-                  </button>
-                </div>
-              </form>
-              <form action="/api/admin/roles" method="post" className="mt-2">
-                <input type="hidden" name="lang" value={ctx.lang} />
-                <input type="hidden" name="returnTo" value={`/${ctx.lang}/roles`} />
-                <input type="hidden" name="action" value="delete" />
-                <input type="hidden" name="roleId" value={selectedRole.id} />
-                <button className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700">
-                  {ctx.t("حذف الدور", "Delete role")}
-                </button>
-              </form>
-            </div>
-          ) : null}
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
+        <article className="rounded-2xl bg-white/12 p-4 backdrop-blur-xl">
           <h2 className="text-lg font-semibold text-slate-900">
             {ctx.t("ترتيب صلاحيات الدور", "Role Permissions Order")}
             {selectedRole ? `: ${selectedRole.role_name}` : ""}

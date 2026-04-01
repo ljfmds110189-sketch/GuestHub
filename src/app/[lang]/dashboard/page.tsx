@@ -1,8 +1,16 @@
-import { FiActivity, FiBell, FiCheckCircle, FiClock, FiLoader, FiTool, FiUsers } from "react-icons/fi";
+import {
+  FiBell,
+  FiBookOpen,
+  FiCalendar,
+  FiClock,
+  FiHome,
+  FiLayers,
+  FiUser,
+  FiUsers,
+} from "react-icons/fi";
 import Link from "next/link";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { RoomCarousel } from "@/components/panel/room-carousel";
-import { getRoomStats, getServiceRequestStats, listRoomStatus } from "@/lib/data";
+import { getRoomStats, getServiceRequestStats } from "@/lib/data";
 import { hasPermission } from "@/lib/auth";
 import { requirePanelContext } from "@/lib/panel";
 
@@ -16,212 +24,167 @@ export default async function DashboardPage({ params, searchParams }: Props) {
   const query = await searchParams;
   const ctx = await requirePanelContext(routeParams.lang);
 
-  const [stats, rooms, srStats] = await Promise.all([
+  const [stats, srStats] = await Promise.all([
     getRoomStats(),
-    listRoomStatus(),
     hasPermission(ctx.user, "services.manage")
       ? getServiceRequestStats()
       : Promise.resolve(null),
   ]);
 
-  const occupancyRate = stats.total > 0 ? Math.round((stats.occupied / stats.total) * 100) : 0;
-  const availableRate = stats.total > 0 ? Math.round((stats.available / stats.total) * 100) : 0;
-  const maintenanceRate = stats.total > 0 ? Math.round((stats.maintenance / stats.total) * 100) : 0;
   const serviceOpen = srStats ? srStats.pending + srStats.accepted + srStats.in_progress : 0;
+  const hasServicePermission = hasPermission(ctx.user, "services.manage");
+  const appTiles = [
+    {
+      href: `/${ctx.lang}/rooms`,
+      label: ctx.t("الغرف", "Rooms"),
+      icon: FiLayers,
+      meta: `${stats.total} ${ctx.t("غرفة", "rooms")}`,
+      iconClass: "bg-cyan-100 text-cyan-700",
+    },
+    {
+      href: `/${ctx.lang}/reservations`,
+      label: ctx.t("الحجوزات", "Reservations"),
+      icon: FiCalendar,
+      meta: ctx.t("متابعة مباشرة", "Live board"),
+      iconClass: "bg-amber-100 text-amber-700",
+    },
+    {
+      href: `/${ctx.lang}/service-requests`,
+      label: ctx.t("طلبات الخدمة", "Service Requests"),
+      icon: FiBell,
+      meta: `${serviceOpen} ${ctx.t("مفتوحة", "open")}`,
+      iconClass: "bg-fuchsia-100 text-fuchsia-700",
+    },
+    {
+      href: `/${ctx.lang}/guests`,
+      label: ctx.t("الضيوف", "Guests"),
+      icon: FiUsers,
+      meta: ctx.t("قائمة النزلاء", "Guest directory"),
+      iconClass: "bg-teal-100 text-teal-700",
+    },
+    {
+      href: `/${ctx.lang}/users`,
+      label: ctx.t("المستخدمون", "Users"),
+      icon: FiUser,
+      meta: ctx.t("فريق الفندق", "Hotel staff"),
+      iconClass: "bg-indigo-100 text-indigo-700",
+    },
+    {
+      href: `/${ctx.lang}/roles`,
+      label: ctx.t("الأدوار", "Roles"),
+      icon: FiBookOpen,
+      meta: ctx.t("الصلاحيات", "Permissions"),
+      iconClass: "bg-rose-100 text-rose-700",
+    },
+    {
+      href: `/${ctx.lang}/profile`,
+      label: ctx.t("الملف الشخصي", "Profile"),
+      icon: FiHome,
+      meta: ctx.t("حسابك", "Your account"),
+      iconClass: "bg-emerald-100 text-emerald-700",
+    },
+  ];
 
   return (
     <PanelShell
       lang={ctx.lang}
       user={ctx.user}
       active="dashboard"
-      title={ctx.t("لوحة متابعة الغرف", "Rooms Dashboard")}
+      title={ctx.t("لوحة التحكم", "Dashboard")}
+      backgroundImage="/back.jpeg"
     >
-      {query.error ? (
-        <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-          {query.error}
-        </p>
-      ) : null}
-      {query.ok ? (
-        <p className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-          {query.ok}
-        </p>
-      ) : null}
+      <div className="mx-auto w-full max-w-6xl space-y-4 p-1 md:p-2">
+          {query.error ? (
+            <p className="rounded-2xl bg-rose-500/25 px-4 py-2 text-sm text-rose-100 backdrop-blur-md">
+              {query.error}
+            </p>
+          ) : null}
+          {query.ok ? (
+            <p className="rounded-2xl bg-emerald-500/25 px-4 py-2 text-sm text-emerald-100 backdrop-blur-md">
+              {query.ok}
+            </p>
+          ) : null}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <p className="text-xs text-slate-500">{ctx.t("إجمالي الغرف", "Total Rooms")}</p>
-          <div className="mt-3 flex items-end justify-between">
-            <p className="text-3xl font-bold text-slate-900">{stats.total}</p>
-            <FiActivity className="h-5 w-5 text-teal-600" />
-          </div>
-          <p className="mt-2 text-xs text-slate-400">
-            {ctx.t("معدل الإشغال", "Occupancy")}: {occupancyRate}%
-          </p>
-        </article>
-        <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-xs text-emerald-700">{ctx.t("المتاحة", "Available")}</p>
-          <div className="mt-3 flex items-end justify-between">
-            <p className="text-3xl font-bold text-emerald-700">{stats.available}</p>
-            <FiCheckCircle className="h-5 w-5 text-emerald-600" />
-          </div>
-          <p className="mt-2 text-xs text-emerald-600">{availableRate}%</p>
-        </article>
-        <article className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-xs text-amber-700">{ctx.t("المشغولة", "Occupied")}</p>
-          <div className="mt-3 flex items-end justify-between">
-            <p className="text-3xl font-bold text-amber-700">{stats.occupied}</p>
-            <FiUsers className="h-5 w-5 text-amber-600" />
-          </div>
-          <p className="mt-2 text-xs text-amber-600">{occupancyRate}%</p>
-        </article>
-        <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-          <p className="text-xs text-rose-700">{ctx.t("تحت الصيانة", "Maintenance")}</p>
-          <div className="mt-3 flex items-end justify-between">
-            <p className="text-3xl font-bold text-rose-700">{stats.maintenance}</p>
-            <FiTool className="h-5 w-5 text-rose-600" />
-          </div>
-          <p className="mt-2 text-xs text-rose-600">{maintenanceRate}%</p>
-        </article>
-      </section>
+          <section className="rounded-3xl bg-white/12 p-4 backdrop-blur-xl md:p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold tracking-wide text-white/90">
+                {ctx.t("تطبيقات العمليات", "Operations Apps")}
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              {appTiles.map((tile) => {
+                const Icon = tile.icon;
+                return (
+                  <Link
+                    key={tile.href}
+                    href={tile.href}
+                    className="group rounded-2xl bg-white/14 p-4 text-center backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/20"
+                  >
+                    <div className="flex min-h-32 flex-col items-center justify-center gap-3">
+                      <div className={`grid h-14 w-14 place-items-center rounded-2xl ${tile.iconClass}`}>
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{tile.label}</p>
+                        <p className="mt-1 text-[11px] text-white/70">{tile.meta}</p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
 
-      <section className="mt-4 grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-900">
-              {ctx.t("مؤشرات التشغيل", "Operational Indicators")}
-            </h2>
-            <span className="text-xs text-slate-400">{ctx.t("اليوم", "Today")}</span>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
-                <span>{ctx.t("الإشغال", "Occupancy")}</span>
-                <span className="font-medium">{occupancyRate}%</span>
+          <section className="rounded-2xl bg-white/12 p-5 backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-white">
+                  {ctx.t("مركز الإشعارات", "Notification Center")}
+                </h2>
+                <p className="mt-1 text-sm text-white/75">
+                  {ctx.t(
+                    "مراجعة التنبيهات الحرجة وتوجيه الطلبات إلى الفريق المناسب بسرعة.",
+                    "Review critical alerts and route requests to the right team quickly.",
+                  )}
+                </p>
               </div>
-              <div className="h-2 rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-amber-500 transition-all"
-                  style={{ width: `${occupancyRate}%` }}
-                />
+              <div className="rounded-xl bg-amber-400/25 px-3 py-1.5 text-xs font-semibold text-amber-100">
+                {ctx.t("التذاكر المفتوحة", "Open Tickets")}: {serviceOpen}
               </div>
             </div>
-            <div>
-              <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
-                <span>{ctx.t("التوفر", "Availability")}</span>
-                <span className="font-medium">{availableRate}%</span>
-              </div>
-              <div className="h-2 rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-emerald-500 transition-all"
-                  style={{ width: `${availableRate}%` }}
-                />
-              </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <Link
+                href={`/${ctx.lang}/service-requests?status=pending`}
+                className="rounded-xl bg-amber-400/20 px-3 py-2.5 text-sm font-medium text-amber-50 transition hover:bg-amber-400/30"
+              >
+                {ctx.t("بانتظار المعالجة", "Pending Queue")} {srStats ? `(${srStats.pending})` : ""}
+              </Link>
+              <Link
+                href={`/${ctx.lang}/service-requests?status=in_progress`}
+                className="rounded-xl bg-indigo-400/20 px-3 py-2.5 text-sm font-medium text-indigo-50 transition hover:bg-indigo-400/30"
+              >
+                {ctx.t("قيد التنفيذ", "In Progress")} {srStats ? `(${srStats.in_progress})` : ""}
+              </Link>
+              <Link
+                href={`/${ctx.lang}/service-requests`}
+                className="rounded-xl bg-cyan-400/20 px-3 py-2.5 text-sm font-medium text-cyan-50 transition hover:bg-cyan-400/30"
+              >
+                {ctx.t("عرض كل التنبيهات", "View All Alerts")}
+              </Link>
             </div>
-            <div>
-              <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
-                <span>{ctx.t("الصيانة", "Maintenance")}</span>
-                <span className="font-medium">{maintenanceRate}%</span>
-              </div>
-              <div className="h-2 rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-rose-500 transition-all"
-                  style={{ width: `${maintenanceRate}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </article>
 
-        <article className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="text-sm font-semibold text-slate-900">
-            {ctx.t("دسترسی سریع", "Quick Access")}
-          </h2>
-          <div className="mt-4 grid gap-2">
-            <Link
-              href={`/${ctx.lang}/rooms`}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100"
-            >
-              {ctx.t("إدارة الغرف", "Manage Rooms")}
-            </Link>
-            <Link
-              href={`/${ctx.lang}/reservations`}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100"
-            >
-              {ctx.t("الحجوزات المباشرة", "Live Reservations")}
-            </Link>
-            <Link
-              href={`/${ctx.lang}/service-requests`}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100"
-            >
-              {ctx.t("طلبات الخدمة", "Service Requests")}
-            </Link>
-          </div>
-        </article>
-      </section>
-
-      {srStats ? (
-        <section className="mt-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">
-              {ctx.t("طلبات الخدمة", "Service Requests")}
-            </h2>
-            <Link
-              href={`/${ctx.lang}/service-requests`}
-              className="text-xs text-teal-600 underline"
-            >
-              {ctx.t("عرض الكل", "View all")}
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <article className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <p className="text-xs text-amber-700">{ctx.t("معلّقة", "Pending")}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-3xl font-bold text-amber-700">{srStats.pending}</p>
-                <FiClock className="h-5 w-5 text-amber-600" />
+            {hasServicePermission ? (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/15 px-3 py-2 text-xs text-white/80">
+                <FiClock className="h-4 w-4" />
+                {ctx.t(
+                  "مزامنة الإشعارات تعمل تلقائياً كل 10 ثوان لضمان تحديث فوري.",
+                  "Notification sync runs every 10 seconds for near real-time updates.",
+                )}
               </div>
-            </article>
-            <article className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-              <p className="text-xs text-indigo-700">{ctx.t("قيد التنفيذ", "In Progress")}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-3xl font-bold text-indigo-700">{srStats.in_progress}</p>
-                <FiLoader className="h-5 w-5 text-indigo-600" />
-              </div>
-            </article>
-            <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs text-emerald-700">{ctx.t("مكتملة", "Completed")}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-3xl font-bold text-emerald-700">{srStats.completed}</p>
-                <FiCheckCircle className="h-5 w-5 text-emerald-600" />
-              </div>
-            </article>
-            <article className="rounded-2xl border border-teal-200 bg-teal-50 p-4">
-              <p className="text-xs text-teal-700">{ctx.t("الإجمالي", "Total")}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-3xl font-bold text-slate-900">{srStats.total}</p>
-                <FiBell className="h-5 w-5 text-teal-600" />
-              </div>
-              <p className="mt-2 text-xs text-teal-600">
-                {ctx.t("طلبات مفتوحة", "Open tickets")}: {serviceOpen}
-              </p>
-            </article>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 text-lg font-semibold text-slate-900">
-          {ctx.t("عرض سريع للغرف", "Quick Rooms List")}
-        </h2>
-        <RoomCarousel
-          rooms={rooms}
-          labels={{
-            available: ctx.t("متاحة", "Available"),
-            occupied: ctx.t("مشغولة", "Occupied"),
-            maintenance: ctx.t("صيانة", "Maintenance"),
-            notification: ctx.t("تنبيه", "Notification"),
-          }}
-        />
-      </section>
+            ) : null}
+          </section>
+      </div>
     </PanelShell>
   );
 }

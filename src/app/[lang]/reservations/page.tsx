@@ -1,6 +1,7 @@
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Pagination } from "@/components/panel/pagination";
 import { ReservationsLiveView } from "@/components/panel/reservations-live-view";
+import { AppSelect } from "@/components/ui/app-select";
 import { listAvailableRoomsOptions, listGuestOptions, listReservationsBoard, listReservationsPaginated } from "@/lib/data";
 import { readPager, requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
 
@@ -29,7 +30,6 @@ export default async function ReservationsPage({ params, searchParams }: Props) 
       user={ctx.user}
       active="reservations"
       title={ctx.t("إدارة الحجوزات", "Reservations Management")}
-      subtitle={ctx.t("إدارة الحجز مع التحديث والحذف والسحب والإفلات", "Manage reservations with edit, delete and drag & drop")}
     >
       {query.error ? (
         <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
@@ -51,10 +51,10 @@ export default async function ReservationsPage({ params, searchParams }: Props) 
           <input type="hidden" name="lang" value={ctx.lang} />
           <input type="hidden" name="returnTo" value={`/${ctx.lang}/reservations`} />
           <div className="flex-1">
-            <select
+            <AppSelect
               name="reservationId"
               required
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+              className="w-full"
             >
               <option value="">{ctx.t("اختر الحجز", "Select reservation")}</option>
               {board
@@ -64,7 +64,7 @@ export default async function ReservationsPage({ params, searchParams }: Props) 
                     {b.guest_name} — {b.room_number}
                   </option>
                 ))}
-            </select>
+            </AppSelect>
           </div>
           <button className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">
             {ctx.t("إنشاء رابط", "Generate Link")}

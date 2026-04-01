@@ -1,5 +1,6 @@
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Pagination } from "@/components/panel/pagination";
+import { RoomsManagement } from "@/components/panel/rooms-management";
 import { hasPermission } from "@/lib/auth";
 import { listRoomsPaginated } from "@/lib/data";
 import { readPager, requirePanelContext, requirePermissionOrRedirect } from "@/lib/panel";
@@ -8,12 +9,6 @@ type Props = {
   params: Promise<{ lang: string }>;
   searchParams: Promise<{ page?: string; pageSize?: string; error?: string; ok?: string }>;
 };
-
-function statusClass(status: "available" | "occupied" | "maintenance") {
-  if (status === "available") return "bg-emerald-100 text-emerald-700";
-  if (status === "occupied") return "bg-amber-100 text-amber-700";
-  return "bg-rose-100 text-rose-700";
-}
 
 export default async function RoomsPage({ params, searchParams }: Props) {
   const routeParams = await params;
@@ -31,7 +26,6 @@ export default async function RoomsPage({ params, searchParams }: Props) {
       user={ctx.user}
       active="rooms"
       title={ctx.t("إدارة الغرف", "Rooms Management")}
-      subtitle={ctx.t("عرض الغرف مع حالة الإشغال المباشرة", "Room list with live occupancy")}
     >
       {query.error ? (
         <p className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
@@ -44,138 +38,41 @@ export default async function RoomsPage({ params, searchParams }: Props) {
         </p>
       ) : null}
 
-      {canManageRooms ? (
-        <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-slate-900">{ctx.t("إضافة غرفة جديدة", "Add New Room")}</h2>
-          <form action="/api/rooms" method="post" className="mt-3 grid gap-3 md:grid-cols-5">
-            <input type="hidden" name="lang" value={ctx.lang} />
-            <input type="hidden" name="returnTo" value={`/${ctx.lang}/rooms`} />
-            <input
-              name="roomNumber"
-              required
-              placeholder={ctx.t("رقم الغرفة", "Room number")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="floor"
-              type="number"
-              placeholder={ctx.t("الطابق", "Floor")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="roomType"
-              placeholder={ctx.t("نوع الغرفة", "Room type")}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <input
-              name="capacity"
-              type="number"
-              min={1}
-              defaultValue={2}
-              className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            />
-            <button className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-              {ctx.t("حفظ", "Save")}
-            </button>
-          </form>
-        </section>
-      ) : null}
-
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-slate-50 text-slate-400">
-              <tr>
-                <th className="px-4 py-3 text-left">{ctx.t("الغرفة", "Room")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("الطابق", "Floor")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("النوع", "Type")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("السعة", "Capacity")}</th>
-                <th className="px-4 py-3 text-left">{ctx.t("الحالة", "Status")}</th>
-                {canManageRooms ? (
-                  <th className="px-4 py-3 text-left">{ctx.t("إجراءات", "Actions")}</th>
-                ) : null}
-              </tr>
-            </thead>
-            <tbody>
-              {rooms.rows.map((room) => (
-                <tr key={room.id} className="border-t border-slate-200 text-slate-700">
-                  <td className="px-4 py-3 font-medium">{room.room_number}</td>
-                  <td className="px-4 py-3">{room.floor ?? "-"}</td>
-                  <td className="px-4 py-3">{room.room_type}</td>
-                  <td className="px-4 py-3">{room.capacity}</td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-1 text-xs ${statusClass(room.live_status)}`}>
-                      {room.live_status === "available"
-                        ? ctx.t("متاحة", "Available")
-                        : room.live_status === "occupied"
-                          ? ctx.t("مشغولة", "Occupied")
-                          : ctx.t("صيانة", "Maintenance")}
-                    </span>
-                  </td>
-                  {canManageRooms ? (
-                    <td className="px-4 py-3">
-                      <div className="space-y-2">
-                        <form action="/api/rooms" method="post" className="grid min-w-[520px] gap-2 md:grid-cols-2">
-                          <input type="hidden" name="lang" value={ctx.lang} />
-                          <input type="hidden" name="returnTo" value={`/${ctx.lang}/rooms`} />
-                          <input type="hidden" name="action" value="update" />
-                          <input type="hidden" name="roomId" value={room.id} />
-                          <input
-                            name="roomNumber"
-                            required
-                            defaultValue={room.room_number}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="floor"
-                            type="number"
-                            defaultValue={room.floor ?? ""}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="roomType"
-                            defaultValue={room.room_type}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <input
-                            name="capacity"
-                            type="number"
-                            min={1}
-                            defaultValue={room.capacity}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          />
-                          <select
-                            name="status"
-                            defaultValue={room.status}
-                            className="rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs"
-                          >
-                            <option value="active">{ctx.t("نشطة", "Active")}</option>
-                            <option value="maintenance">{ctx.t("صيانة", "Maintenance")}</option>
-                          </select>
-                          <div className="flex flex-wrap gap-2">
-                            <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white">
-                              {ctx.t("حفظ", "Save")}
-                            </button>
-                          </div>
-                        </form>
-                        <form action="/api/rooms" method="post">
-                          <input type="hidden" name="lang" value={ctx.lang} />
-                          <input type="hidden" name="returnTo" value={`/${ctx.lang}/rooms`} />
-                          <input type="hidden" name="action" value="delete" />
-                          <input type="hidden" name="roomId" value={room.id} />
-                          <button className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">
-                            {ctx.t("حذف", "Delete")}
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <RoomsManagement
+        lang={ctx.lang}
+        returnTo={`/${ctx.lang}/rooms`}
+        rooms={rooms.rows}
+        canManageRooms={canManageRooms}
+        labels={{
+          addRoom: ctx.t("إضافة غرفة جديدة", "Add New Room"),
+          editRoom: ctx.t("تعديل بيانات الغرفة", "Edit Room"),
+          deleteRoom: ctx.t("حذف الغرفة", "Delete Room"),
+          save: ctx.t("حفظ", "Save"),
+          cancel: ctx.t("إلغاء", "Cancel"),
+          roomNumber: ctx.t("رقم الغرفة", "Room number"),
+          floor: ctx.t("الطابق", "Floor"),
+          roomType: ctx.t("نوع الغرفة", "Room type"),
+          capacity: ctx.t("السعة", "Capacity"),
+          status: ctx.t("الحالة", "Status"),
+          active: ctx.t("نشطة", "Active"),
+          maintenance: ctx.t("صيانة", "Maintenance"),
+          actions: ctx.t("إجراءات", "Actions"),
+          room: ctx.t("الغرفة", "Room"),
+          type: ctx.t("النوع", "Type"),
+          available: ctx.t("متاحة", "Available"),
+          occupied: ctx.t("مشغولة", "Occupied"),
+          maintenanceLabel: ctx.t("صيانة", "Maintenance"),
+          confirmDeleteTitle: ctx.t("تأكيد حذف الغرفة", "Confirm Room Deletion"),
+          confirmDeleteMessage: ctx.t(
+            "هل أنت متأكد من حذف هذه الغرفة؟ لا يمكن التراجع عن هذا الإجراء.",
+            "Are you sure you want to delete this room? This action cannot be undone.",
+          ),
+          confirmDeleteButton: ctx.t("تأكيد الحذف", "Confirm Delete"),
+          openAddModal: ctx.t("إضافة غرفة", "Add Room"),
+          openEditModal: ctx.t("تعديل", "Edit"),
+          openDeleteDialog: ctx.t("حذف", "Delete"),
+        }}
+      />
 
       <Pagination
         lang={ctx.lang}
