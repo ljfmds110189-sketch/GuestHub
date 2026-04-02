@@ -15,6 +15,7 @@ export default async function QrCodesPage({ params, searchParams }: Props) {
   requirePermissionOrRedirect(ctx, "guests.manage", "dashboard");
 
   const rooms = await listRoomQrTokens();
+  const appBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
   const withToken = rooms.filter((r) => r.token);
   const withoutToken = rooms.filter((r) => !r.token);
 
@@ -132,7 +133,7 @@ export default async function QrCodesPage({ params, searchParams }: Props) {
                 {/* Link display */}
                 <div className="w-full rounded-lg bg-[rgba(0,0,0,0.25)] px-3 py-2">
                   <p className="break-all text-center text-[11px] font-mono text-white/60">
-                    /guest/{room.token}
+                    {appBaseUrl}/guest/{room.token}
                   </p>
                 </div>
 
