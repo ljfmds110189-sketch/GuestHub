@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "معرف الحجز غير صالح", "Invalid reservation id"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "لا يمكن حذف الحجز لوجود طلبات خدمة مرتبطة", "Cannot delete reservation with linked service requests"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم حذف الحجز", "Reservation deleted"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات الحجز غير صحيحة", "Invalid reservation data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الغرفة غير نشطة", "Room is not active"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الغرفة محجوزة في هذا الوقت", "Room is already booked for this time"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تحديث الحجز", "Reservation updated"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات الحجز غير صحيحة", "Invalid reservation data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -160,7 +160,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الغرفة غير نشطة", "Room is not active"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الغرفة محجوزة في هذا الوقت", "Room is already booked for this time"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -192,7 +192,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء الحجز", "Reservation created"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -200,7 +200,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?error=${encodeURIComponent(tr(lang, "إجراء غير معروف", "Unknown action"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }

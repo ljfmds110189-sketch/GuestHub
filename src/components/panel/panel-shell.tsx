@@ -7,6 +7,7 @@ import { NotificationBell } from "./notification-bell";
 import { LiveClock } from "./live-clock";
 import { HtmlDirSetter } from "@/components/html-dir-setter";
 import { BackNavButton } from "./back-nav-button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type NavKey =
   | "dashboard"
@@ -134,11 +135,11 @@ export function PanelShell({ lang, user, active, title, subtitle, backgroundImag
             </div>
           </div>
         </header>
-        <main className="panel-glass relative z-0 flex-1 overflow-y-auto p-4 md:p-6">
+        <ScrollArea className="panel-glass relative z-0 flex-1 p-4 md:p-6">
           <div className="mx-auto w-full max-w-7xl">
             {children}
           </div>
-        </main>
+        </ScrollArea>
 
         <footer
           className={`shrink-0 px-3 py-2 md:px-6 ${

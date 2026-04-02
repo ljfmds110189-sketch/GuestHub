@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "معرف الضيف غير صالح", "Invalid guest id"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "لا يمكن حذف الضيف لوجود حجوزات مرتبطة", "Cannot delete guest with linked reservations"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم حذف الضيف", "Guest deleted"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات الضيف غير صحيحة", "Invalid guest data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تحديث بيانات الضيف", "Guest updated"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "الاسم الأول واسم العائلة مطلوبان", "First name and last name are required"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?ok=${encodeURIComponent(tr(lang, "تمت إضافة الضيف", "Guest added"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }

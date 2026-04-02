@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
-  // Build full URL using request origin
-  const origin = new URL(request.url).origin;
+  // Use configured public URL so generated QR works behind reverse proxies.
+  const origin = (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, "");
   const fullUrl = `${origin}${path}`;
 
   const svg = await QRCode.toString(fullUrl, {
@@ -23,7 +23,9 @@ export async function GET(request: Request) {
   return new NextResponse(svg, {
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "public, max-age=86400",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }

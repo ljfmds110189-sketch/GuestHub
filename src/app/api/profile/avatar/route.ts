@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 const maxFileBytes = 3 * 1024 * 1024;
@@ -22,16 +22,16 @@ export async function POST(request: Request) {
   const returnTo = cleanText(form.get("returnTo")) || `/${lang}/users/${userId}`;
 
   const currentUser = await getCurrentUser();
+  const baseUrl = getBaseUrl();
   const redirectTo = (messageType: "ok" | "error", message: string) => {
-    const url = new URL(returnTo, request.url);
-    url.searchParams.set(messageType, message);
-    return NextResponse.redirect(url, { status: 303 });
+    return NextResponse.redirect(`${baseUrl}${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
   };
 
   if (!currentUser) {
-    const url = new URL(`/${lang}/login`, request.url);
-    url.searchParams.set("error", tr(lang, "تحتاج تسجيل دخول", "Please sign in"));
-    return NextResponse.redirect(url, { status: 303 });
+    return NextResponse.redirect(
+      `${baseUrl}/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
+      { status: 303 },
+    );
   }
 
   const canManageUsers = hasPermission(currentUser, "users.manage");

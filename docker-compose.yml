@@ -1,0 +1,145 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: guesthub-postgres
+    restart: unless-stopped
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-guesthub}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - guesthub-network
+
+  volume-permissions:
+    image: alpine:3.20
+    container_name: guesthub-volume-permissions
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /app/public/uploads /app/data /app/logs /app/backups && \
+        chown -R 1001:1001 /app/public/uploads /app/data /app/logs /app/backups
+    volumes:
+      - uploads-data:/app/public/uploads
+      - app-data:/app/data
+      - logs-data:/app/logs
+      - backups-data:/app/backups
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://gh.sbc.om}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://gh.sbc.om}
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-BBwPCSbvgHK9ex7FxdAqNiHffoMP-2QqpTl8i5WL9LFVxqryLQbqzTkr5l7n4vROyvCa2WFsmE2uBXU6Qm3Ixlc}
+    container_name: guesthub-app
+    restart: unless-stopped
+    environment:
+      # Nginx Proxy Configuration
+      VIRTUAL_HOST: ${APP_DOMAIN:-gh.sbc.om}
+      VIRTUAL_PORT: 3000
+      VIRTUAL_PROTO: http
+      VIRTUAL_NETWORK: proxy
+      LETSENCRYPT_HOST: ${APP_DOMAIN:-gh.sbc.om}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@sbc.om}
+      
+      # Application Configuration
+      NODE_ENV: production
+      PORT: 3000
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      DB_BOOTSTRAP_DISABLED: ${DB_BOOTSTRAP_DISABLED:-false}
+      DB_BOOTSTRAP_RETRIES: ${DB_BOOTSTRAP_RETRIES:-20}
+      DB_BOOTSTRAP_RETRY_DELAY_MS: ${DB_BOOTSTRAP_RETRY_DELAY_MS:-3000}
+      DB_BOOTSTRAP_READY_FILE: /app/data/db-bootstrap.ready
+      
+      # Database (derived from same credentials used by postgres service)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-guesthub}
+      
+      # Application URLs
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://gh.sbc.om}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://gh.sbc.om}
+      
+      # Security (CHANGE THESE IN PRODUCTION!)
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CRON_SECRET: ${CRON_SECRET:-your-cron-secret-change-this}
+
+      # Admin auto-seed (optional but recommended for first boot)
+      AUTO_SEED_ADMIN: ${AUTO_SEED_ADMIN:-true}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-hoteladmin}
+      ADMIN_FULL_NAME: ${ADMIN_FULL_NAME:-Hotel Admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      
+      # VAPID Keys for Push Notifications
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-BBwPCSbvgHK9ex7FxdAqNiHffoMP-2QqpTl8i5WL9LFVxqryLQbqzTkr5l7n4vROyvCa2WFsmE2uBXU6Qm3Ixlc}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-BBwPCSbvgHK9ex7FxdAqNiHffoMP-2QqpTl8i5WL9LFVxqryLQbqzTkr5l7n4vROyvCa2WFsmE2uBXU6Qm3Ixlc}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-EPGEEoe5klW3HIqFg0MW2X_5jPFCfsqAYJpXo1r-0xA}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@gh.sbc.om}
+      
+      # File Upload
+      MAX_FILE_SIZE: 10485760
+      UPLOAD_DIR: /app/public/uploads
+    expose:
+      - "3000"
+    volumes:
+      # Persist uploads (images, files, etc.)
+      - uploads-data:/app/public/uploads
+      # Persist application data
+      - app-data:/app/data
+      # Persist logs
+      - logs-data:/app/logs
+      # Persist backups
+      - backups-data:/app/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+      volume-permissions:
+        condition: service_completed_successfully
+    networks:
+      - guesthub-network
+      - proxy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+networks:
+  guesthub-network:
+    external: false
+    name: guesthub-network
+  proxy:
+    external: ${PROXY_NETWORK_EXTERNAL:-false}
+    name: ${PROXY_NETWORK_NAME:-proxy}
+
+volumes:
+  postgres-data:
+    driver: local
+    name: guesthub-postgres-data
+  uploads-data:
+    driver: local
+    name: guesthub-uploads-data
+  app-data:
+    driver: local
+    name: guesthub-app-data
+  logs-data:
+    driver: local
+    name: guesthub-logs-data
+  backups-data:
+    driver: local
+    name: guesthub-backups-data

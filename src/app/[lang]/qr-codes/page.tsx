@@ -15,6 +15,8 @@ export default async function QrCodesPage({ params, searchParams }: Props) {
   requirePermissionOrRedirect(ctx, "guests.manage", "dashboard");
 
   const rooms = await listRoomQrTokens();
+  const appBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+  const qrVersion = encodeURIComponent(appBaseUrl);
   const withToken = rooms.filter((r) => r.token);
   const withoutToken = rooms.filter((r) => !r.token);
 
@@ -115,7 +117,7 @@ export default async function QrCodesPage({ params, searchParams }: Props) {
                 {/* QR Code image */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/qr?path=${encodeURIComponent(`/guest/${room.token}`)}`}
+                  src={`/api/qr?path=${encodeURIComponent(`/guest/${room.token}`)}&v=${qrVersion}`}
                   alt={`QR ${room.room_number}`}
                   width={160}
                   height={160}
@@ -132,14 +134,14 @@ export default async function QrCodesPage({ params, searchParams }: Props) {
                 {/* Link display */}
                 <div className="w-full rounded-lg bg-[rgba(0,0,0,0.25)] px-3 py-2">
                   <p className="break-all text-center text-[11px] font-mono text-white/60">
-                    /guest/{room.token}
+                    {appBaseUrl}/guest/{room.token}
                   </p>
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2">
                   <a
-                    href={`/api/qr?path=${encodeURIComponent(`/guest/${room.token}`)}`}
+                    href={`/api/qr?path=${encodeURIComponent(`/guest/${room.token}`)}&v=${qrVersion}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 rounded-lg bg-[rgba(255,255,255,0.12)] px-3 py-1.5 text-xs text-white/80 transition hover:bg-[rgba(255,255,255,0.20)]"

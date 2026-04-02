@@ -25,16 +25,15 @@ export async function POST(request: Request, context: RouteParams) {
   const returnTo = cleanText(form.get("returnTo")) || `/${lang}/users`;
 
   const redirectTo = (messageType: "ok" | "error", message: string) => {
-    const url = new URL(returnTo, request.url);
-    url.searchParams.set(messageType, message);
-    return NextResponse.redirect(url, { status: 303 });
+    return NextResponse.redirect(`${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
   };
 
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    const url = new URL(`/${lang}/login`, request.url);
-    url.searchParams.set("error", tr(lang, "تحتاج تسجيل دخول", "Please sign in"));
-    return NextResponse.redirect(url, { status: 303 });
+    return NextResponse.redirect(
+      `/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
+      { status: 303 },
+    );
   }
 
   if (!hasPermission(currentUser, "users.manage")) {

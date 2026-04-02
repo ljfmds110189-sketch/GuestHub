@@ -14,38 +14,26 @@ export async function POST(request: Request) {
   const currentUser = await getCurrentUser();
   if (!currentUser || !hasPermission(currentUser, "guests.manage")) {
     return NextResponse.redirect(
-      new URL(
-        `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
-      ),
+      `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
     );
   }
 
   if (action === "bulk") {
     const count = await generateAllRoomQrTokens();
     return NextResponse.redirect(
-      new URL(
-        `${returnTo}?ok=${encodeURIComponent(tr(lang, `تم إنشاء ${count} رمز QR`, `Generated ${count} QR codes`))}`,
-        request.url,
-      ),
+      `${returnTo}?ok=${encodeURIComponent(tr(lang, `تم إنشاء ${count} رمز QR`, `Generated ${count} QR codes`))}`,
     );
   }
 
   if (!Number.isFinite(roomId)) {
     return NextResponse.redirect(
-      new URL(
-        `${returnTo}?error=${encodeURIComponent(tr(lang, "غرفة غير صالحة", "Invalid room"))}`,
-        request.url,
-      ),
+      `${returnTo}?error=${encodeURIComponent(tr(lang, "غرفة غير صالحة", "Invalid room"))}`,
     );
   }
 
   await generateRoomQrToken(roomId);
 
   return NextResponse.redirect(
-    new URL(
-      `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء رمز QR", "QR code generated"))}`,
-      request.url,
-    ),
+    `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء رمز QR", "QR code generated"))}`,
   );
 }

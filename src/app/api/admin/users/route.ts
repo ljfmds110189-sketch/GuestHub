@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
 import { hashPassword } from "@/lib/security";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات المستخدم غير صالحة (الحد الأدنى 8 أحرف لكلمة المرور)", "Invalid user data (password must be at least 8 characters)"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "اسم المستخدم موجود مسبقًا", "Username already exists"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء المستخدم", "User created"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }

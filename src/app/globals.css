@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "overlayscrollbars/overlayscrollbars.css";
 
 @font-face {
   font-family: "SBC";
@@ -71,4 +72,19 @@ body {
 .panel-glass .shadow-xl,
 .panel-glass .shadow-2xl {
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25) !important;
+}
+
+/* OverlayScrollbars glass theme */
+.os-theme-light > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+.os-theme-light > .os-scrollbar:hover > .os-scrollbar-track > .os-scrollbar-handle {
+  background: rgba(255, 255, 255, 0.40);
+}
+.os-theme-light > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle.active {
+  background: rgba(255, 255, 255, 0.50);
+}
+.os-theme-light > .os-scrollbar > .os-scrollbar-track {
+  background: transparent;
 }

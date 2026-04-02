@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query, tx } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات غير صالحة", "Invalid data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تحديث حالة الطلب", "Request status updated"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات غير صالحة", "Invalid data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تعيين الموظف", "Staff assigned"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "معرف الطلب غير صالح", "Invalid request id"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم حذف الطلب", "Request deleted"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات غير صالحة", "Invalid data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الحجز غير نشط", "Reservation is not active"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -160,7 +160,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الخدمة غير متوفرة", "Service not available"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء طلب الخدمة", "Service request created"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -204,7 +204,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?error=${encodeURIComponent(tr(lang, "إجراء غير معروف", "Unknown action"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }

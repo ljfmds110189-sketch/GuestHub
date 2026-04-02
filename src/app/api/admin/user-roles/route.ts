@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "المستخدم والدور مطلوبان", "User and role are required"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تعيين الدور للمستخدم", "Role assigned to user"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }

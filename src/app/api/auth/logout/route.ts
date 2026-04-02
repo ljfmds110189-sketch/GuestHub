@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteSession, SESSION_COOKIE } from "@/lib/auth";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       `/${lang}/login?ok=${encodeURIComponent(
         tr(lang, "تم تسجيل الخروج", "Logged out successfully"),
       )}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
   response.cookies.set(SESSION_COOKIE, "", {

@@ -4,6 +4,7 @@ import {
   Children,
   isValidElement,
   type ChangeEvent,
+  type ReactElement,
   type ReactNode,
   useCallback,
   useEffect,
@@ -14,6 +15,7 @@ import {
 } from "react";
 import { FiChevronDown, FiSearch } from "react-icons/fi";
 import { createPortal } from "react-dom";
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
 type OptionItem = {
   value: string;
@@ -34,10 +36,11 @@ type Props = {
   children?: ReactNode;
 };
 
-function toStringValue(value: string | number | readonly string[] | undefined) {
-  if (Array.isArray(value)) return String(value[0] ?? "");
+function toStringValue(value: string | number | readonly string[] | undefined): string {
+  if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
-  return value ?? "";
+  if (Array.isArray(value)) return String(value[0] ?? "");
+  return "";
 }
 
 function optionLabel(node: ReactNode) {
@@ -50,26 +53,40 @@ function optionLabel(node: ReactNode) {
 function flattenOptions(children: ReactNode): OptionItem[] {
   const entries: OptionItem[] = [];
 
+  type OptionProps = {
+    value?: string | number | readonly string[];
+    children?: ReactNode;
+    disabled?: boolean;
+  };
+
+  type OptgroupProps = {
+    label?: string;
+    children?: ReactNode;
+  };
+
   for (const child of Children.toArray(children)) {
     if (!isValidElement(child)) continue;
     const elementType = typeof child.type === "string" ? child.type.toLowerCase() : "";
 
     if (elementType === "option") {
-      const value = toStringValue(child.props.value);
-      const label = optionLabel(child.props.children);
-      entries.push({ value, label, disabled: Boolean(child.props.disabled) });
+      const optionChild = child as ReactElement<OptionProps>;
+      const value = toStringValue(optionChild.props.value);
+      const label = optionLabel(optionChild.props.children);
+      entries.push({ value, label, disabled: Boolean(optionChild.props.disabled) });
       continue;
     }
 
     if (elementType === "optgroup") {
-      const groupLabel = String(child.props.label ?? "").trim();
-      for (const sub of Children.toArray(child.props.children)) {
+      const optgroupChild = child as ReactElement<OptgroupProps>;
+      const groupLabel = String(optgroupChild.props.label ?? "").trim();
+      for (const sub of Children.toArray(optgroupChild.props.children)) {
         if (!isValidElement(sub)) continue;
         const subType = typeof sub.type === "string" ? sub.type.toLowerCase() : "";
         if (subType !== "option") continue;
-        const value = toStringValue(sub.props.value);
-        const label = optionLabel(sub.props.children);
-        entries.push({ value, label, disabled: Boolean(sub.props.disabled), group: groupLabel });
+        const subOption = sub as ReactElement<OptionProps>;
+        const value = toStringValue(subOption.props.value);
+        const label = optionLabel(subOption.props.children);
+        entries.push({ value, label, disabled: Boolean(subOption.props.disabled), group: groupLabel });
       }
     }
   }
@@ -207,29 +224,38 @@ export function AppSelect({
                 />
               </div>
 
-              <ul className="max-h-56 overflow-y-auto py-1">
-                {filtered.length === 0 ? (
-                  <li className="px-3 py-2 text-xs text-white/60">No results</li>
-                ) : (
-                  filtered.map((option) => (
-                    <li key={`${option.group ?? "root"}-${option.value}`}>
-                      <button
-                        type="button"
-                        disabled={option.disabled}
-                        onClick={() => selectValue(option.value)}
-                        className={`w-full px-3 py-2 text-left text-sm transition ${
-                          selectedValue === option.value
-                            ? "bg-cyan-500/30 text-white"
-                            : "text-white/90 hover:bg-white/10"
-                        } ${option.disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                      >
-                        {option.group ? <span className="me-1 text-[10px] text-white/55">[{option.group}]</span> : null}
-                        {option.label}
-                      </button>
-                    </li>
-                  ))
-                )}
-              </ul>
+              <OverlayScrollbarsComponent
+                defer
+                options={{
+                  scrollbars: { theme: "os-theme-light", autoHide: "move", autoHideDelay: 600 },
+                  overflow: { x: "hidden" },
+                }}
+                className="max-h-56"
+              >
+                <ul className="py-1">
+                  {filtered.length === 0 ? (
+                    <li className="px-3 py-2 text-xs text-white/60">No results</li>
+                  ) : (
+                    filtered.map((option) => (
+                      <li key={`${option.group ?? "root"}-${option.value}`}>
+                        <button
+                          type="button"
+                          disabled={option.disabled}
+                          onClick={() => selectValue(option.value)}
+                          className={`w-full px-3 py-2 text-left text-sm transition ${
+                            selectedValue === option.value
+                              ? "bg-cyan-500/30 text-white"
+                              : "text-white/90 hover:bg-white/10"
+                          } ${option.disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                        >
+                          {option.group ? <span className="me-1 text-[10px] text-white/55">[{option.group}]</span> : null}
+                          {option.label}
+                        </button>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </OverlayScrollbarsComponent>
             </div>,
             document.body,
           )

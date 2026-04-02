@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "لا تملك صلاحية", "Access denied"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "معرف الدور غير صالح", "Invalid role id"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "الدور غير موجود", "Role not found"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "لا يمكن حذف دور نظام", "Cannot delete a system role"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "لا يمكن حذف الدور لوجود مستخدمين مرتبطين به", "Cannot delete role while users are assigned"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم حذف الدور", "Role deleted"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       return NextResponse.redirect(
         new URL(
           `${returnTo}?error=${encodeURIComponent(tr(lang, "بيانات الدور غير صحيحة", "Invalid role data"))}`,
-          request.url,
+          getBaseUrl(),
         ),
       );
     }
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
         return NextResponse.redirect(
           new URL(
             `${returnTo}?error=${encodeURIComponent(tr(lang, "الدور موجود مسبقًا", "Role already exists"))}`,
-            request.url,
+            getBaseUrl(),
           ),
         );
       }
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم تحديث الدور", "Role updated"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "اسم الدور مطلوب", "Role name is required"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       new URL(
         `${returnTo}?error=${encodeURIComponent(tr(lang, "الدور موجود مسبقًا", "Role already exists"))}`,
-        request.url,
+        getBaseUrl(),
       ),
     );
   }
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
   return NextResponse.redirect(
     new URL(
       `${returnTo}?ok=${encodeURIComponent(tr(lang, "تم إنشاء الدور", "Role created"))}`,
-      request.url,
+      getBaseUrl(),
     ),
   );
 }
