@@ -553,6 +553,7 @@ export type ServiceRequestRow = {
   estimated_cost: string | null;
   scheduled_at: string | null;
   assigned_to_name: string | null;
+  assigned_to_avatar: string | null;
   created_at: string;
   completed_at: string | null;
 };
@@ -673,6 +674,7 @@ export async function listServiceRequestsPaginated(
        sr.estimated_cost::text,
        sr.scheduled_at::text,
        au.full_name AS assigned_to_name,
+       au.avatar_url AS assigned_to_avatar,
        sr.created_at::text,
        sr.completed_at::text
      FROM service_requests sr
@@ -719,6 +721,7 @@ export async function listServiceRequestsByReservation(
        sr.estimated_cost::text,
        sr.scheduled_at::text,
        au.full_name AS assigned_to_name,
+       au.avatar_url AS assigned_to_avatar,
        sr.created_at::text,
        sr.completed_at::text
      FROM service_requests sr
