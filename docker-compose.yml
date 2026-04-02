@@ -43,19 +43,19 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_APP_URL: https://gh.sbc.om
-        NEXT_PUBLIC_API_URL: https://gh.sbc.om
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://gh.sbc.om}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://gh.sbc.om}
         NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-BBwPCSbvgHK9ex7FxdAqNiHffoMP-2QqpTl8i5WL9LFVxqryLQbqzTkr5l7n4vROyvCa2WFsmE2uBXU6Qm3Ixlc}
     container_name: guesthub-app
     restart: unless-stopped
     environment:
       # Nginx Proxy Configuration
-      VIRTUAL_HOST: gh.sbc.om
+      VIRTUAL_HOST: ${APP_DOMAIN:-gh.sbc.om}
       VIRTUAL_PORT: 3000
       VIRTUAL_PROTO: http
       VIRTUAL_NETWORK: proxy
-      LETSENCRYPT_HOST: gh.sbc.om
-      LETSENCRYPT_EMAIL: admin@sbc.om
+      LETSENCRYPT_HOST: ${APP_DOMAIN:-gh.sbc.om}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@sbc.om}
       
       # Application Configuration
       NODE_ENV: production
@@ -70,8 +70,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-guesthub}
       
       # Application URLs
-      NEXT_PUBLIC_APP_URL: https://gh.sbc.om
-      NEXT_PUBLIC_API_URL: https://gh.sbc.om
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://gh.sbc.om}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://gh.sbc.om}
       
       # Security (CHANGE THESE IN PRODUCTION!)
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}

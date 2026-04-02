@@ -1,33 +1,36 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { assertEnv, env } from "@/lib/env";
 
-assertEnv();
-
 declare global {
   var __guesthubPool__: Pool | undefined;
 }
 
-const pool =
-  global.__guesthubPool__ ??
-  new Pool({
+function getPool() {
+  if (global.__guesthubPool__) {
+    return global.__guesthubPool__;
+  }
+
+  assertEnv();
+
+  const pool = new Pool({
     connectionString: env.DATABASE_URL,
     max: 15,
     idleTimeoutMillis: 30_000,
   });
 
-if (env.NODE_ENV !== "production") {
   global.__guesthubPool__ = pool;
+  return pool;
 }
 
 export async function query<T extends QueryResultRow>(
   text: string,
   values: unknown[] = [],
 ) {
-  return pool.query<T>(text, values);
+  return getPool().query<T>(text, values);
 }
 
 export async function tx<T>(fn: (client: PoolClient) => Promise<T>) {
-  const client = await pool.connect();
+  const client = await getPool().connect();
 
   try {
     await client.query("BEGIN");
