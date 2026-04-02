@@ -10,14 +10,28 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-set -a
-# shellcheck disable=SC1091
-source .env
-set +a
+read_env_value() {
+  local key="$1"
+  local raw
+  raw="$(grep -E "^${key}=" .env | tail -n 1 | cut -d '=' -f2- || true)"
+  raw="${raw%$'\r'}"
+
+  # Remove optional surrounding quotes.
+  if [[ "$raw" =~ ^\".*\"$ ]]; then
+    raw="${raw:1:${#raw}-2}"
+  elif [[ "$raw" =~ ^\'.*\'$ ]]; then
+    raw="${raw:1:${#raw}-2}"
+  fi
+
+  printf '%s' "$raw"
+}
+
+POSTGRES_USER="$(read_env_value POSTGRES_USER)"
+POSTGRES_DB="$(read_env_value POSTGRES_DB)"
+POSTGRES_PASSWORD="$(read_env_value POSTGRES_PASSWORD)"
 
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 POSTGRES_DB="${POSTGRES_DB:-guesthub}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-}"
 
 if [[ -z "$POSTGRES_PASSWORD" ]]; then
   echo "[reconcile-db-password] POSTGRES_PASSWORD is empty in .env"

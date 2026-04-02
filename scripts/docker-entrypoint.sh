@@ -43,5 +43,15 @@ echo "[Entrypoint] Starting database bootstrap (migrations + init scripts)..."
 node ./scripts/db-bootstrap.js
 echo "[Entrypoint] Database bootstrap completed."
 
+if [ "${AUTO_SEED_ADMIN:-true}" = "true" ]; then
+  if [ -n "${ADMIN_PASSWORD:-}" ]; then
+    echo "[Entrypoint] Seeding admin user..."
+    node ./scripts/seed-admin.mjs
+    echo "[Entrypoint] Admin seed completed."
+  else
+    echo "[Entrypoint] AUTO_SEED_ADMIN=true but ADMIN_PASSWORD is not set; skipping admin seed."
+  fi
+fi
+
 echo "[Entrypoint] Starting application: $*"
 exec "$@"
