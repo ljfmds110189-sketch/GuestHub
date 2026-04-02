@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 import { hashPassword } from "@/lib/security";
 
@@ -10,14 +10,15 @@ export async function POST(request: Request) {
   const lang = resolveLang(cleanText(form.get("lang")));
   const returnTo = cleanText(form.get("returnTo")) || `/${lang}/profile`;
 
+  const baseUrl = getBaseUrl();
   const redirectTo = (messageType: "ok" | "error", message: string) => {
-    return NextResponse.redirect(`${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
+    return NextResponse.redirect(`${baseUrl}${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
   };
 
   const currentUser = await getCurrentUser();
   if (!currentUser) {
     return NextResponse.redirect(
-      `/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
+      `${baseUrl}/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
       { status: 303 },
     );
   }

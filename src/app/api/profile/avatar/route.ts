@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { query } from "@/lib/db";
-import { cleanText } from "@/lib/http";
+import { cleanText, getBaseUrl } from "@/lib/http";
 import { resolveLang, tr } from "@/lib/i18n";
 
 const maxFileBytes = 3 * 1024 * 1024;
@@ -22,13 +22,14 @@ export async function POST(request: Request) {
   const returnTo = cleanText(form.get("returnTo")) || `/${lang}/users/${userId}`;
 
   const currentUser = await getCurrentUser();
+  const baseUrl = getBaseUrl();
   const redirectTo = (messageType: "ok" | "error", message: string) => {
-    return NextResponse.redirect(`${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
+    return NextResponse.redirect(`${baseUrl}${returnTo}?${messageType}=${encodeURIComponent(message)}`, { status: 303 });
   };
 
   if (!currentUser) {
     return NextResponse.redirect(
-      `/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
+      `${baseUrl}/${lang}/login?error=${encodeURIComponent(tr(lang, "تحتاج تسجيل دخول", "Please sign in"))}`,
       { status: 303 },
     );
   }
